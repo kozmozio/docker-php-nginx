@@ -1,5 +1,3 @@
-FROM php:8.3.2RC1-fpm-alpine3.19
-
 # PHP NGIX BASE IMAGE 
 # Build on  PHP 8.3.2RC1-fpm-alpine3.19 and NGINX 1.24.0
 # https://github.com/joseluisq/alpine-php-fpm
@@ -8,6 +6,8 @@ FROM php:8.3.2RC1-fpm-alpine3.19
 #  DIGEST:sha256: 071752e874fa0f057503cc4046bdedec83c4fa2330a24274554b45a5b726182c
 #  https://hub.docker.com/layers/library/php/8.3-rc-alpine3.19/images/sha256-071752e874fa0f057503cc4046bdedec83c4fa2330a24274554b45a5b726182c?context=explore
 
+FROM php:8.3.2-alpine3.19
+
 
 ENV NGINX_VERSION 1.24.0
 ENV NJS_VERSION   0.8.2
@@ -15,12 +15,13 @@ ENV PKG_RELEASE   1
 
 # install necessary alpine packages need for laravel PHP
 RUN apk update  
-RUN apk add zip 
+RUN apk add $PHPIZE_DEPS 
+# RUN apk add zip 
 RUN apk add unzip 
+RUN apk add supervisor 
 RUN apk add nano 
 RUN apk add curl-dev
 RUN apk add dos2unix 
-RUN apk add supervisor 
 RUN apk add libpng-dev 
 RUN apk add libzip-dev 
 RUN apk add freetype-dev 
@@ -29,44 +30,42 @@ RUN apk add libjpeg-turbo-dev
 RUN apk add oniguruma-dev 
 RUN apk add openssl
 RUN apk add pcre-dev
-RUN apk add $PHPIZE_DEPS 
 RUN apk add nodejs
 RUN apk add npm
 RUN apk add bash
-# RUN rm -r /var/lib/apt/lists/*
 
+# clear install cache
+RUN rm -rf /var/cache/apk/*
 
 # compile native PHP packages
-RUN docker-php-ext-install gd
-RUN docker-php-ext-install bcmath
-RUN docker-php-ext-install pcntl
+# RUN docker-php-ext-install gd
+# RUN docker-php-ext-install bcmath
+# RUN docker-php-ext-install pcntl
 RUN docker-php-ext-install ctype
 RUN docker-php-ext-install curl
-# RUN docker-php-ext-install hash (already installed in php 8.3)
 RUN docker-php-ext-install dom
 RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install fileinfo
 RUN docker-php-ext-install filter
-RUN docker-php-ext-install openssl 
-RUN docker-php-ext-install pcre
 RUN docker-php-ext-install pdo
 RUN docker-php-ext-install session
 RUN docker-php-ext-install xml
+# RUN docker-php-ext-install hash (already installed in php 8.3)
     
 # install PostgreSQL extensions
 RUN apk add --no-cache postgresql-dev
 RUN docker-php-ext-install pdo_pgsql pgsql
  
-#  can't find command '/usr/local/sbin/php-fpm
+# install additional packages from PECL
+RUN pecl install zip && docker-php-ext-enable zip \
+    && pecl install igbinary && docker-php-ext-enable igbinary \
+    && yes | pecl install msgpack && docker-php-ext-enable msgpack 
 
 
 # configure packages
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
-# install additional packages from PECL
-# RUN pecl install zip && docker-php-ext-enable zip \
-#     && pecl install igbinary && docker-php-ext-enable igbinary \
-#     && yes | pecl install msgpack && docker-php-ext-enable msgpack 
+
 
 # install nginx
 RUN set -x \
@@ -96,7 +95,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
     
 # copy supervisor configuration
-COPY ./docker/supervisord.conf /etc/supervisord.conf
+COPY ./supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
 
