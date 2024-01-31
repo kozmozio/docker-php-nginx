@@ -1,7 +1,7 @@
 # Docker PHP Nginx
 This repository contains a Docker configuration for running PHP with Nginx. Used as base image and wil be extended for Laravel Wordpress or other PHP installations.
 
-Docker Image is here : https://hub.docker.com/
+Docker Image is here : https://hub.docker.com/repository/docker/kozmozio/php-nginx-base/general
 
 ## Getting Started
 To get started, follow these steps:
