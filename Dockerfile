@@ -6,7 +6,8 @@
 #  DIGEST:sha256: 071752e874fa0f057503cc4046bdedec83c4fa2330a24274554b45a5b726182c
 #  https://hub.docker.com/layers/library/php/8.3-rc-alpine3.19/images/sha256-071752e874fa0f057503cc4046bdedec83c4fa2330a24274554b45a5b726182c?context=explore
 
-FROM php:8.3.2-alpine3.19
+FROM php:8.3.2RC1-fpm-alpine3.19
+
 
 
 ENV NGINX_VERSION 1.24.0
